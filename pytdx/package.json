@@ -1,0 +1,17 @@
+{
+  "name": "nodetdx",
+  "version": "1.0.0",
+  "description": "",
+  "main": "helper.js",
+  "bin": {
+    "nodetdx": "bin/hqget.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bufferpack": "0.0.6"
+  }
+}
