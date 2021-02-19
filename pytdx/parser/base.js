@@ -7,6 +7,12 @@
 const zlib = require('zlib');
 const bufferpack = require('bufferpack');
 const logger = require('../log');
+const {
+  hexToBytes,
+  bytesToHex,
+  bufferToBytes,
+  bytesToBuffer
+} = require('../helper');
 
 class SocketClientNotReady extends Error {} // { constructor(...args) { super(...args) } }
 
@@ -24,6 +30,7 @@ class ResponseRecvFails extends Error {}
 
 const RSP_HEADER_LEN = 0x10
 
+let totalSended = 0;
 class BaseParser {
   constructor(client) {
     this.client = client;
@@ -38,7 +45,7 @@ class BaseParser {
   setParams(...args) {}
   parseResponse(body_buf) {}
   setup() {}
-  call_api() {
+  async call_api() {
     this.setup();
 
     if (!this.client) {
@@ -51,11 +58,13 @@ class BaseParser {
 
     logger.debug('send package:', this.send_pkg);
 
-    this.client.end(this.send_pkg, (d) => {
-      logger.debug('d', d)
-    });
+    await this.client.write(this.send_pkg);
 
-    const nsended = this.client.bytesWritten; // bytesRead
+    let nsended = this.client.socket.bytesWritten; // bytesRead
+    logger.debug('raw nsended', nsended)
+    const raw_nsended = nsended;
+    nsended = nsended - totalSended;
+    totalSended = raw_nsended
 
     logger.debug('nsended', nsended, this.send_pkg.length)
 
@@ -66,20 +75,29 @@ class BaseParser {
       throw new SendRequestPkgFails('send fails');
     }
     else {
-      const head_buf = this.client.recv(this.rsp_header_len);
+      const head_buf = await this.client.read(this.rsp_header_len);
       logger.debug('recv head_buf', head_buf, '|len is :', head_buf.length);
 
       if (head_buf.length === this.rsp_header_len) {
-        const { zipsize, unzipsize } = bufferpack.unpack('<IIIHH', head_buf); // _, _, _, zipsize, unzipsize = struct.unpack("<IIIHH", head_buf)
+        const list = bufferpack.unpack('<IIIHH', head_buf); // _, _, _, zipsize, unzipsize = struct.unpack("<IIIHH", head_buf)
+        const zipsize = list[3], unzipsize = list[4];
+        // console.log(data)
         logger.debug('zip size is: ', zipsize);
-        let body_buf = new ByteArray(); // body_buf = bytearray()
+        let body_buf = [], buf; // body_buf = bytearray()
         while(true) {
-          const buf = this.client.recv(zipsize);
-          body_buf.push(buf); // body_buf.extend(buf);
+          buf = await this.client.read(zipsize);
+          for (let i = 0; i < buf.length; i++) {
+            body_buf.push(buf[i]);
+          }
+          // body_buf.
+          // body_buf.push(buf); // body_buf.extend(buf);
+          logger.debug('buf.length', buf.length, 'body_buf.length', body_buf.length);
           if (!buf || !buf.length || body_buf.length === zipsize) {
             break;
           }
         }
+
+        console.log('body_buf', Buffer.from(body_buf))
 
         if (!buf.length) {
           logger.debug('接收数据体失败服务器断开连接');
@@ -93,16 +111,12 @@ class BaseParser {
           // 解压
           logger.debug('需要解压');
           let unziped_data;
-          if (sys.version_info[0] === 2) {
-            unziped_data = zlib.unzipSync(Buffer.from(body_buf)); // unziped_data = zlib.decompress(buffer(body_buf));
-          }
-          else {
-            unziped_data = zlib.unzipSync(body_buf); // zlib.decompress
-          }
+          unziped_data = zlib.unzipSync(Buffer.from(body_buf)); // unziped_data = zlib.decompress(buffer(body_buf));
+          // unziped_data = zlib.unzipSync(body_buf); // zlib.decompress
           body_buf = unziped_data;
         }
 
-        log.debug('recv body: ', body_buf);
+        logger.debug('recv body: ', body_buf);
 
         return this.parseResponse(body_buf);
       }
@@ -112,6 +126,11 @@ class BaseParser {
       }
     }
   }
+
+  hexToBytes(arg) { return hexToBytes(arg) }
+  bytesToHex(arg) { return bytesToHex(arg) }
+  bufferToBytes(arg) { return bufferToBytes(arg) }
+  bytesToBuffer(arg) { return bytesToBuffer(arg) }
 }
 
 module.exports = BaseParser;

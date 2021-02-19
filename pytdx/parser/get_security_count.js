@@ -36,11 +36,14 @@ const BaseParser = require('./base');
 
 class GetSecurityCountCmd extends BaseParser {
   setParams(market) {
-    const pkg = ByteArray.fromhex('0c 0c 18 6c 00 01 08 00 08 00 4e 04'); // pkg = bytearray.fromhex(u"0c 0c 18 6c 00 01 08 00 08 00 4e 04")
+    let pkg = Buffer.from('0c0c186c0001080008004e04', 'hex'); // pkg = bytearray.fromhex(u"0c 0c 18 6c 00 01 08 00 08 00 4e 04")
     const market_pkg = bufferpack.pack('<H', market);
-    pkg.push(market_pkg);
-    pkg.push('\x75\xc7\x33\x01'); // pkg.extend(b'\x75\xc7\x33\x01')
-    this.send_pkg = pkg;
+    let pkgArr = this.bufferToBytes(pkg);
+    pkgArr = pkgArr.concat(this.bufferToBytes(market_pkg));
+
+    pkgArr = pkgArr.concat(this.hexToBytes('75c73301')); // pkg.extend(b'\x75\xc7\x33\x01')
+    console.log('pkgArr', pkgArr)
+    this.send_pkg = this.bytesToBuffer(pkgArr);
   }
 
   parseResponse(body_buf) {

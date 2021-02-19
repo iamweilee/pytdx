@@ -32,6 +32,7 @@
 
 // from pytdx.parser.setup_commands import SetupCmd1, SetupCmd2, SetupCmd3
 const net = require('net');
+const { PromiseSocket, TimeoutError } = require('promise-socket');
 const TDXParams = require('./params');
 const logger = require('./log');
 const {
@@ -54,30 +55,26 @@ class TdxHq_API {
    * @param {*} port 服务器端口
    * @return 是否连接成功 true/false
    */
-  connect(host, port) {
-    this.client = net.createConnection({ host, port });
-    this.client.setTimeout(CONNECT_TIMEOUT);
-    this.client.on('connect', () => {
-      logger.debug('连接到服务器！');
-      if (this.need_setup) {
-        this.setup();
-      }
-    });
-    this.client.on('data', data => {
-      logger.debug(data.toString());
-      // this.client.end();
-    });
-    this.client.on('timeout', () => {
-      logger.error('socket timeout');
-    });
-    this.client.on('error', err => {
-      logger.error('服务器异常：', err);
-    });
-    this.client.on('close', () => { 
-      logger.debug('断开与服务器的连接');
-    });
-    
+  async connect(host, port) {
+    const socket = new net.Socket();
+    const promiseSocket = new PromiseSocket(socket);
+    this.client = promiseSocket;
+    promiseSocket.setTimeout(CONNECT_TIMEOUT);
     logger.debug('connecting to server %s on port %d', host, port);
+
+    try {
+      await promiseSocket.connect({ host, port });
+    }
+    catch(e) {
+      if (e instanceof TimeoutError) {
+        logger.error('socket timeout');
+      }
+    }
+    logger.debug("connected!");
+
+    if (this.need_setup) {
+      this.setup();
+    }
 
     return this;
     // try {
@@ -105,10 +102,10 @@ class TdxHq_API {
     this.disconnect();
   }
 
-  setup() {
-    new SetupCmd1(this.client).call_api();
-    new SetupCmd2(this.client).call_api();
-    new SetupCmd3(this.client).call_api();
+  async setup() {
+    await new SetupCmd1(this.client).call_api();
+    await new SetupCmd2(this.client).call_api();
+    await new SetupCmd3(this.client).call_api();
   }
 
   // api list

@@ -15,7 +15,22 @@ function bytesToHex(bytes) {
   return hex.join('');
 }
 
+function bufferToBytes(buf) {
+  const bytes = [];
+  for(var i= 0; i< buf.length; i++){
+    const byteint = buf[i];
+    bytes.push(byteint);
+  }
+  return bytes;
+}
+
+function bytesToBuffer(bytes) {
+  return Buffer.from(bytes);
+}
+
 module.exports = {
   hexToBytes,
-  bytesToHex
+  bytesToHex,
+  bufferToBytes,
+  bytesToBuffer
 }

@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bufferpack": "0.0.6"
+    "bufferpack": "0.0.6",
+    "promise-socket": "^7.0.0"
   }
 }

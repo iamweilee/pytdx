@@ -37,9 +37,13 @@ class GetSecurityCountCmd(BaseParser):
     def setParams(self, market):
 
         pkg = bytearray.fromhex(u"0c 0c 18 6c 00 01 08 00 08 00 4e 04")
+        print( pkg )
         market_pkg = struct.pack("<H", market)
+        print( market_pkg )
         pkg.extend(market_pkg)
+        print( pkg )
         pkg.extend(b'\x75\xc7\x33\x01')
+        print( pkg )
         self.send_pkg = pkg
 
     def parseResponse(self, body_buf):
