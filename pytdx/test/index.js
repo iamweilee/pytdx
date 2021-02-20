@@ -7,5 +7,12 @@ const api = new TdxHq_API();
 // api.get_security_count(0);
 (async() => {
   await api.connect('119.147.212.81', 7709);
-  await api.get_security_count(0);
+  // let num = await api.get_security_count(0);
+  // console.log('0 api.get_security_count', num)
+  // num = await api.get_security_count(1);
+  // console.log('1 api.get_security_count', num)
+  // const list = await api.get_security_list(0, 0);
+  // console.log(list);
+  const quotes = await api.get_security_quotes([[0, '000001']]);
+  console.log(quotes)
 })()

@@ -29,8 +29,19 @@ class SetupCmd2 extends BaseParser {
 }
 
 class SetupCmd3 extends BaseParser {
+  /*
+  u'0c 03 18 99 00 01 20 00 20 00 db 0f d5'
+  u'd0 c9 cc d6 a4 a8 af 00 00 00 8f c2 25'
+  u'40 13 00 00 d5 00 c9 cc bd f0 d7 ea 00'
+  u'00 00 02'
+  */
   setup() {
-    this.send_pkg = Buffer.from('0c031899000120002000db0fd5d0c9ccd6a4a8af0000008fc22540130000d500c9ccbdf0d7ea00000002', 'hex');
+    let arr = this.bufferToBytes(Buffer.from('0c031899000120002000db0fd5', 'hex'));
+    arr = arr.concat(this.bufferToBytes(Buffer.from('d0c9ccd6a4a8af0000008fc225', 'hex')));
+    arr = arr.concat(this.bufferToBytes(Buffer.from('40130000d500c9ccbdf0d7ea00', 'hex')));
+    arr = arr.concat(this.bufferToBytes(Buffer.from('000002', 'hex')));
+    // this.send_pkg = Buffer.from('0c031899000120002000db0fd5 d0c9ccd6a4a8af0000008fc225 40130000d500c9ccbdf0d7ea00 000002', 'hex');
+    this.send_pkg = this.bytesToBuffer(arr);
   }
 
   parseResponse(body_buf) {

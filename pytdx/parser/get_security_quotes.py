@@ -106,6 +106,8 @@ class GetSecurityQuotesCmd(BaseParser):
 
             pos += 10
 
+            # print(int.from_bytes(reversed_bytes0, byteorder='little'))
+
             one_stock = OrderedDict([
                 ("market", market),
                 ("code", code.decode("utf-8")),

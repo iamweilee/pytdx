@@ -6,12 +6,15 @@
 // import sys
 const zlib = require('zlib');
 const bufferpack = require('bufferpack');
+const iconv = require('iconv-lite');
 const logger = require('../log');
 const {
   hexToBytes,
   bytesToHex,
   bufferToBytes,
-  bytesToBuffer
+  bytesToBuffer,
+  get_volume,
+  get_price
 } = require('../helper');
 
 class SocketClientNotReady extends Error {} // { constructor(...args) { super(...args) } }
@@ -28,6 +31,8 @@ class ResponseHeaderRecvFails extends Error {}
 
 class ResponseRecvFails extends Error {}
 
+class MethodNotImplemented extends Error {}
+
 const RSP_HEADER_LEN = 0x10
 
 let totalSended = 0;
@@ -42,11 +47,11 @@ class BaseParser {
     this.rsp_header_len = RSP_HEADER_LEN;
   }
 
-  setParams(...args) {}
-  parseResponse(body_buf) {}
-  setup() {}
+  setParams() { throw new MethodNotImplemented(); }
+  parseResponse() { throw new MethodNotImplemented(); }
+  setup() { throw new MethodNotImplemented(); }
   async call_api() {
-    this.setup();
+    await this.setup();
 
     if (!this.client) {
       throw new SocketClientNotReady('socket client not ready');
@@ -97,8 +102,6 @@ class BaseParser {
           }
         }
 
-        console.log('body_buf', Buffer.from(body_buf))
-
         if (!buf.length) {
           logger.debug('接收数据体失败服务器断开连接');
           throw new ResponseRecvFails('接收数据体失败服务器断开连接');
@@ -127,10 +130,21 @@ class BaseParser {
     }
   }
 
-  hexToBytes(arg) { return hexToBytes(arg) }
-  bytesToHex(arg) { return bytesToHex(arg) }
-  bufferToBytes(arg) { return bufferToBytes(arg) }
-  bytesToBuffer(arg) { return bytesToBuffer(arg) }
+  hexToBytes(arg) { return hexToBytes(arg); }
+  bytesToHex(arg) { return bytesToHex(arg); }
+  bufferToBytes(arg) { return bufferToBytes(arg); }
+  bytesToBuffer(arg) { return bytesToBuffer(arg); }
+  get_volume(arg) { return get_volume(arg); }
+  get_price(arg1, arg2) { return get_price(arg1, arg2); }
+  decode(buf, charset) {
+    if (typeof buf === 'string') { // 如果是字符串, 先以二进制转为Buffer再转为字节数组, 然后去除NULL后再转回为Buffer
+      buf = Buffer.from(buf, 'binary');
+      const bytes = this.bufferToBytes(buf);
+      buf = this.bytesToBuffer(bytes.filter(n => n)); // 去除u\0000
+    }
+    return iconv.decode(buf, charset);
+  }
+  encode(str, charset) { return iconv.encode(str, charset); }
 }
 
 module.exports = BaseParser;

@@ -41,6 +41,8 @@ const {
   SetupCmd3
 } = require('./parser/setup_commands');
 const GetSecurityCountCmd = require('./parser/get_security_count');
+const GetSecurityList = require('./parser/get_security_list');
+const GetSecurityQuotesCmd = require('./parser/get_security_quotes');
 
 const CONNECT_TIMEOUT = 5000
 const RECV_HEADER_LEN = 0x10
@@ -73,7 +75,7 @@ class TdxHq_API {
     logger.debug("connected!");
 
     if (this.need_setup) {
-      this.setup();
+      await this.setup();
     }
 
     return this;
@@ -109,11 +111,25 @@ class TdxHq_API {
   }
 
   // api list
-  get_security_count(market) {
+  async get_security_count(market) {
     const cmd = new GetSecurityCountCmd(this.client);
     cmd.setParams(market);
-    return cmd.call_api();
+    return await cmd.call_api();
   }
+
+  async get_security_list(market, start) {
+    const cmd = new GetSecurityList(this.client);
+    cmd.setParams(market, start);
+    return await cmd.call_api();
+  }
+
+  async get_security_quotes(all_stock) {
+    const cmd = new GetSecurityQuotesCmd(this.client);
+    cmd.setParams(all_stock);
+    return await cmd.call_api();
+  }
+  
+  
 }
 
 module.exports = TdxHq_API;
