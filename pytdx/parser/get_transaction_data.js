@@ -5,6 +5,8 @@ from pytdx.helper import get_datetime, get_volume, get_price, get_time
 from collections import OrderedDict
 import struct
 
+// 查询分笔成交
+
 class GetTransactionData(BaseParser):
 
     def setParams(self, market, code, start, count):

@@ -29,6 +29,7 @@
 
 // In [63]: 0x333b
 // Out[63]: 13115
+// 获取市场股票数量
 const bufferpack = require('bufferpack');
 // const logger = require('../log');
 const BaseParser = require('./base');

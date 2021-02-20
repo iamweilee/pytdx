@@ -1,15 +1,18 @@
+// 获取股票行情
 const bufferpack = require('bufferpack');
 const BaseParser = require('./base');
 
 class GetSecurityQuotesCmd extends BaseParser {
   /**
-   * @param {*} all_stock 一个包含 (market, code) 元组的列表， 如 [ [0, '000001'], [1, '600001'] ]
+   * @param {*} all_stock 一个包含 [market, code] 元组的列表， 如 [ [0, '000001'], [1, '600001'] ]
    */
   setParams(all_stock) {
     const stock_len = all_stock.length;
     if (stock_len <= 0) {
       return false;
     }
+
+    this._stockParams = all_stock
 
     const pkgdatalen = stock_len * 7 + 12;
     const values = [
@@ -23,7 +26,7 @@ class GetSecurityQuotesCmd extends BaseParser {
       stock_len,
     ];
 
-    const pkg_header = bufferpack.pack('<<HIHHIIHH', values);
+    const pkg_header = bufferpack.pack('<HIHHIIHH', values);
     let pkgArr = this.bufferToBytes(pkg_header);
 
     all_stock.forEach(([market, code]) => {
@@ -42,70 +45,83 @@ class GetSecurityQuotesCmd extends BaseParser {
     var pos = 0;
     pos += 2; // skip b1 cb
     const [num_stock] = bufferpack.unpack('<H', body_buf.slice(pos, pos + 2));
-    pos += 2;
+    // pos += 2;
+
+    const startPosList = this._calcStartPosForEveryStock(body_buf);
 
     const stocks = [];
 
     for (let i = 0; i < num_stock; i++) {
+      pos = startPosList[i];
       // print (body_buf.slice(pos))
       // b'\x00000001\x95\n\x87\x0e\x01\x01\x05\x00\xb1\xb9\xd6\r\xc7\x0e\x8d\xd7\x1a\x84\x04S\x9c<M\xb6\xc8\x0e\x97\x8e\x0c\x00\xae\n\x00\x01\xa0\x1e\x9e\xb3\x03A\x02\x84\xf9\x01\xa8|B\x03\x8c\xd6\x01\xb0lC\x04\xb7\xdb\x02\xac\x7fD\x05\xbb\xb0\x01\xbe\xa0\x01y\x08\x01GC\x04\x00\x00\x95\n'
       const [market, code, active1] = bufferpack.unpack('<B6sH', body_buf.slice(pos, pos + 9));
       pos += 9;
       var [price, pos] = this.get_price(body_buf, pos);
-      var [last_close_diff, pos] = this.get_price(body_buf, pos)
-      var [open_diff, pos] = this.get_price(body_buf, pos)
-      var [high_diff, pos] = this.get_price(body_buf, pos)
-      var [low_diff, pos] = this.get_price(body_buf, pos)
+      var [last_close_diff, pos] = this.get_price(body_buf, pos);
+      var [open_diff, pos] = this.get_price(body_buf, pos);
+      var [high_diff, pos] = this.get_price(body_buf, pos);
+      var [low_diff, pos] = this.get_price(body_buf, pos);
       // 不确定这里应该是用 this.get_price 跳过还是直接跳过4个bytes
-      var reversed_bytes0 = body_buf.slice(pos, pos + 4)
+      var reversed_bytes0 = body_buf.slice(pos, pos + 4);
       // console.log('reversed_bytes0', reversed_bytes0)
       pos += 4
-      // var [reversed_bytes0, pos] = this.get_price(body_buf, pos)
+      // var [reversed_bytes0, pos] = this.get_price(body_buf, pos);
       // 应该是 -price
-      var [reversed_bytes1, pos] = this.get_price(body_buf, pos)
+      var [reversed_bytes1, pos] = this.get_price(body_buf, pos);
       // console.log(reversed_bytes1 == -price)
-      var [vol, pos] = this.get_price(body_buf, pos)
-      var [cur_vol, pos] = this.get_price(body_buf, pos)
-      var [amount_raw] = bufferpack.unpack('<I', body_buf.slice(pos, pos + 4))
-      var amount = this.get_volume(amount_raw)
+      if (reversed_bytes1 !== -price) {
+        throw new Error(`Check Error 'reversed_bytes1 !== -price' (${reversed_bytes1} !== -${price})`)
+      }
+      // else {
+      //   console.log(`${reversed_bytes1} !== -${price}`)
+      // }
+      var [vol, pos] = this.get_price(body_buf, pos);
+      var [cur_vol, pos] = this.get_price(body_buf, pos);
+      var [amount_raw] = bufferpack.unpack('<I', body_buf.slice(pos, pos + 4));
+      var amount = this.get_volume(amount_raw);
       pos += 4
-      var [s_vol, pos] = this.get_price(body_buf, pos)
-      var [b_vol, pos] = this.get_price(body_buf, pos)
-      var [reversed_bytes2, pos] = this.get_price(body_buf, pos)
-      var [reversed_bytes3, pos] = this.get_price(body_buf, pos)
+      var [s_vol, pos] = this.get_price(body_buf, pos);
+      var [b_vol, pos] = this.get_price(body_buf, pos);
+      var [reversed_bytes2, pos] = this.get_price(body_buf, pos);
+      var [reversed_bytes3, pos] = this.get_price(body_buf, pos);
 
-      var [bid1, pos] = this.get_price(body_buf, pos)
-      var [ask1, pos] = this.get_price(body_buf, pos)
-      var [bid_vol1, pos] = this.get_price(body_buf, pos)
-      var [ask_vol1, pos] = this.get_price(body_buf, pos)
+      var [bid1, pos] = this.get_price(body_buf, pos);
+      var [ask1, pos] = this.get_price(body_buf, pos);
+      var [bid_vol1, pos] = this.get_price(body_buf, pos);
+      var [ask_vol1, pos] = this.get_price(body_buf, pos);
 
-      var [bid2, pos] = this.get_price(body_buf, pos)
-      var [ask2, pos] = this.get_price(body_buf, pos)
-      var [bid_vol2, pos] = this.get_price(body_buf, pos)
-      var [ask_vol2, pos] = this.get_price(body_buf, pos)
+      var [bid2, pos] = this.get_price(body_buf, pos);
+      var [ask2, pos] = this.get_price(body_buf, pos);
+      var [bid_vol2, pos] = this.get_price(body_buf, pos);
+      var [ask_vol2, pos] = this.get_price(body_buf, pos);
 
-      var [bid3, pos] = this.get_price(body_buf, pos)
-      var [ask3, pos] = this.get_price(body_buf, pos)
-      var [bid_vol3, pos] = this.get_price(body_buf, pos)
-      var [ask_vol3, pos] = this.get_price(body_buf, pos)
+      var [bid3, pos] = this.get_price(body_buf, pos);
+      var [ask3, pos] = this.get_price(body_buf, pos);
+      var [bid_vol3, pos] = this.get_price(body_buf, pos);
+      var [ask_vol3, pos] = this.get_price(body_buf, pos);
 
-      var [bid4, pos] = this.get_price(body_buf, pos)
-      var [ask4, pos] = this.get_price(body_buf, pos)
-      var [bid_vol4, pos] = this.get_price(body_buf, pos)
-      var [ask_vol4, pos] = this.get_price(body_buf, pos)
+      var [bid4, pos] = this.get_price(body_buf, pos);
+      var [ask4, pos] = this.get_price(body_buf, pos);
+      var [bid_vol4, pos] = this.get_price(body_buf, pos);
+      var [ask_vol4, pos] = this.get_price(body_buf, pos);
 
-      var [bid5, pos] = this.get_price(body_buf, pos)
-      var [ask5, pos] = this.get_price(body_buf, pos)
-      var [bid_vol5, pos] = this.get_price(body_buf, pos)
-      var [ask_vol5, pos] = this.get_price(body_buf, pos)
+      var [bid5, pos] = this.get_price(body_buf, pos);
+      var [ask5, pos] = this.get_price(body_buf, pos);
+      var [bid_vol5, pos] = this.get_price(body_buf, pos);
+      var [ask_vol5, pos] = this.get_price(body_buf, pos);
 
       var [
         reversed_bytes4, reversed_bytes5, reversed_bytes6,
         reversed_bytes7, reversed_bytes8, reversed_bytes9,
         active2
-      ] = bufferpack.unpack('<HbbbbHH', body_buf.slice(pos, pos + 10))
+      ] = bufferpack.unpack('<HbbbbHH', body_buf.slice(pos, pos + 10));
 
-      pos += 10 // TODO: 处理同时查询多只股票解析响应数据异常的问题
+      // pos += 10 // TODO: 处理同时查询多只股票解析响应数据异常的问题
+
+      // console.log('body_buf[%d][%d]', pos,pos+1, body_buf[pos], body_buf[pos+1])
+      
+      // pos += i % 2
 
       stocks.push({
         market,
@@ -163,6 +179,22 @@ class GetSecurityQuotesCmd extends BaseParser {
 
   _cal_price(base_p, diff) {
     return (base_p + diff) / 100
+  }
+
+  _calcStartPosForEveryStock(body_buf) {
+    let arr = [], lastIndex = -1;
+    this._stockParams.forEach(([market, code]) => {
+      if (typeof code === 'string') {
+        const one_stock_pkg = bufferpack.pack('<B6s', [market, code]);
+        const bytesArr = this.bufferToBytes(one_stock_pkg);
+        lastIndex = this.find_csa(body_buf, bytesArr, lastIndex + 1);
+        if (lastIndex !== -1) {
+          arr.push(lastIndex);
+        }
+      }
+    });
+
+    return arr;
   }
 }
 

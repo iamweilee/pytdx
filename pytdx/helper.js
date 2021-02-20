@@ -106,7 +106,6 @@ function get_price(data, pos) {
     }
   }
       
-
   pos += 1
 
   if (sign)
@@ -115,6 +114,21 @@ function get_price(data, pos) {
   return [ intdata, pos ];
 }
 
+function find_csa(arr, subarr, from_index) {
+  var i = from_index >>> 0,
+      sl = subarr.length,
+      l = arr.length + 1 - sl;
+
+  loop: for (; i<l; i++) {
+    for (var j=0; j<sl; j++) {
+      if (arr[i+j] !== subarr[j]) {
+        continue loop;
+      }
+    }
+    return i;
+  }
+  return -1;
+}
 
 module.exports = {
   hexToBytes,
@@ -122,5 +136,6 @@ module.exports = {
   bufferToBytes,
   bytesToBuffer,
   get_volume,
-  get_price
+  get_price,
+  find_csa
 }

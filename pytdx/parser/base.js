@@ -14,7 +14,8 @@ const {
   bufferToBytes,
   bytesToBuffer,
   get_volume,
-  get_price
+  get_price,
+  find_csa
 } = require('../helper');
 
 class SocketClientNotReady extends Error {} // { constructor(...args) { super(...args) } }
@@ -119,7 +120,7 @@ class BaseParser {
           body_buf = unziped_data;
         }
 
-        logger.debug('recv body: ', body_buf);
+        // logger.debug('recv body ', JSON.stringify(body_buf, 2, null));
 
         return this.parseResponse(body_buf);
       }
@@ -136,6 +137,7 @@ class BaseParser {
   bytesToBuffer(arg) { return bytesToBuffer(arg); }
   get_volume(arg) { return get_volume(arg); }
   get_price(arg1, arg2) { return get_price(arg1, arg2); }
+  find_csa(arg1, arg2, arg3) { return find_csa(arg1, arg2, arg3); }
   decode(buf, charset) {
     if (typeof buf === 'string') { // 如果是字符串, 先以二进制转为Buffer再转为字节数组, 然后去除NULL后再转回为Buffer
       buf = Buffer.from(buf, 'binary');

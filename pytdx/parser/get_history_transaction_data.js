@@ -1,9 +1,4 @@
-// # coding=utf-8
-
-// from pytdx.parser.base import BaseParser
-// from pytdx.helper import get_datetime, get_volume, get_price, get_time
-// from collections import OrderedDict
-// import struct
+// 查询历史分笔成交
 
 const bufferpack = require('bufferpack');
 // const logger = require('../log');

@@ -7,7 +7,7 @@
 const bufferpack = require('bufferpack');
 // const logger = require('../log');
 const BaseParser = require('./base');
-
+// 查询历史分时行情
 class GetHistoryMinuteTimeData extends BaseParser {
   /**
    * @param {*} market 0/1

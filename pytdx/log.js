@@ -1,4 +1,9 @@
+// module.exports = {
+//   debug: console.debug,
+//   error: console.error
+// }
+
 module.exports = {
-  debug: console.debug,
-  error: console.error
+  debug: function() {},
+  error: function() {}
 }

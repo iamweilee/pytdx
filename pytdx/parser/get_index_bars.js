@@ -19,7 +19,7 @@
 
 // bytearray(b'\xa8\xa9\xa4I\x10R\rR') = 1348917 151741792256.00000
 
-
+// 获取指数k线
 
 
 class GetIndexBarsCmd(BaseParser):

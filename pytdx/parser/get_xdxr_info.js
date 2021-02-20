@@ -16,6 +16,7 @@ get_volume ?
 1218.0031249523163 ---> 2.3
 
 """
+// 读取除权除息信息
 
 class GetXdXrInfo(BaseParser):
 

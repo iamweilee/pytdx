@@ -1,3 +1,4 @@
+// 获取股票列表
 const bufferpack = require('bufferpack');
 const BaseParser = require('./base');
 class GetSecurityList extends BaseParser {

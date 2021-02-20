@@ -1,9 +1,4 @@
-// # coding=utf-8
-
-// from pytdx.parser.base import BaseParser
-// from pytdx.helper import get_datetime, get_volume, get_price
-// from collections import OrderedDict
-// import struct
+// 读取公司信息详情
 const bufferpack = require('bufferpack');
 // const logger = require('../log');
 const BaseParser = require('./base');
