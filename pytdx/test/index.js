@@ -13,6 +13,6 @@ const api = new TdxHq_API();
   // console.log('1 api.get_security_count', num)
   // const list = await api.get_security_list(0, 0);
   // console.log(list);
-  const quotes = await api.get_security_quotes([[0, '000001']]);
+  const quotes = await api.get_security_quotes([[0, '000001'], [1, '600300'], [0,'000002']]);
   console.log(quotes)
 })()

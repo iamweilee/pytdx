@@ -45,10 +45,6 @@ class GetSecurityQuotesCmd extends BaseParser {
     pos += 2;
 
     const stocks = [];
-    // let price, last_close_diff, open_diff, high_diff, low_diff, reversed_bytes0, reversed_bytes1, vol, cur_vol, amount_raw,
-    // amount, s_vol, b_vol, reversed_bytes2, reversed_bytes3, bid1, ask1, bid_vol1, ask_vol1, bid2, ask2, bid_vol2, ask_vol2,
-    // bid3, ask3, bid_vol3, ask_vol3, bid4, ask4, bid_vol4, ask_vol4, bid5, ask5, bid_vol5, ask_vol5, reversed_bytes4,
-    // reversed_bytes5, reversed_bytes6, reversed_bytes7, reversed_bytes8, reversed_bytes9, active2;
 
     for (let i = 0; i < num_stock; i++) {
       // print (body_buf.slice(pos))
@@ -109,7 +105,7 @@ class GetSecurityQuotesCmd extends BaseParser {
         active2
       ] = bufferpack.unpack('<HbbbbHH', body_buf.slice(pos, pos + 10))
 
-      pos += 10
+      pos += 10 // TODO: 处理同时查询多只股票解析响应数据异常的问题
 
       stocks.push({
         market,
