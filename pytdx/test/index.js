@@ -23,6 +23,10 @@ const api = new TdxHq_API();
   // console.log(xdxr_info);
   // const bars = await api.get_security_bars(9, 0, '000001', 0, 10);
   // console.log(bars)
-  const index_bars = await api.get_index_bars(9, 1, '000001', 0, 100);
-  console.log(index_bars);
+  // const index_bars = await api.get_index_bars(9, 1, '000001', 0, 100);
+  // console.log(index_bars);
+  // const time_data = await api.get_minute_time_data(0, '000001');
+  // console.log(time_data);
+  const his_time_data = await api.get_history_minute_time_data(0, '000001', 20161209)
+  console.log(his_time_data)
 })()

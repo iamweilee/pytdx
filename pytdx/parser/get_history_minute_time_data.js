@@ -1,13 +1,9 @@
-// # coding=utf-8
-
-// from pytdx.parser.base import BaseParser
-// from pytdx.helper import get_datetime, get_volume, get_price
-// from collections import OrderedDict
-// import struct
-const bufferpack = require('bufferpack');
-// const logger = require('../log');
-const BaseParser = require('./base');
 // 查询历史分时行情
+// 参数：市场代码， 股票代码，时间 如： 0,'000001',20161209 或 1,'600300',20161209
+
+const bufferpack = require('bufferpack');
+const BaseParser = require('./base');
+
 class GetHistoryMinuteTimeData extends BaseParser {
   /**
    * @param {*} market 0/1
@@ -19,35 +15,35 @@ class GetHistoryMinuteTimeData extends BaseParser {
       date = +date;
     }
 
-    if (typeof code === 'string') {
-      code = code.encode('utf-8');
-    }
-
-    const pkg = ByteArray.fromhex('0c 01 30 00 01 01 0d 00 0d 00 b4 0f'); // pkg = bytearray.fromhex(u'0c 01 30 00 01 01 0d 00 0d 00 b4 0f')
-    pkg.push(bufferpack.pack('<IB6s', date, market, code)); // pkg.extend(struct.pack("<IB6s", date, market, code))
-    this.send_pkg = pkg;
+    const pkg = Buffer.from('0c01300001010d000d00b40f', 'hex');
+    let pkgArr = this.bufferToBytes(pkg);
+    const pkg_param = bufferpack.pack('<IB6s', [date, market, code]);
+    pkgArr = pkgArr.concat(this.bufferToBytes(pkg_param));
+    this.send_pkg = this.bytesToBuffer(pkgArr);
   }
 
   parseResponse(body_buf) {
-    let pos = 0;
-    const { num } = bufferpack.unpack('<H', body_buf.slice(0, 2)); // (num, ) = struct.unpack("<H", body_buf[:2])
+    var pos = 0;
+    const [num] = bufferpack.unpack('<H', body_buf.slice(pos, pos + 2)); // (num, ) = struct.unpack("<H", body_buf[:2])
     let last_price = 0;
     // 跳过了4个字节，实在不知道是什么意思
     pos += 6;
     const prices = [];
     for (let i = 0; i < num; i++) {
-      let { price_raw, pos } = get_price(body_buf, pos);
-      let { reversed1, pos } = get_price(body_buf, pos);
-      let { vol, pos } = get_price(body_buf, pos);
+      var [ price_raw, pos ] = this.get_price(body_buf, pos);
+      var [ reversed1, pos ] = this.get_price(body_buf, pos);
+      var [ vol, pos ] = this.get_price(body_buf, pos);
       last_price = last_price + price_raw;
-      price = {
+
+      prices.push({
         price: last_price / 100,
         vol
-      };
-      prices.push(price);
+      });
     }
     return prices;
   }
+
+  setup() {}
 }
 
 module.exports = GetHistoryMinuteTimeData;
