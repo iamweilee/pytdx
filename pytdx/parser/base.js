@@ -15,7 +15,10 @@ const {
   bytesToBuffer,
   get_volume,
   get_price,
-  find_csa
+  find_csa,
+  get_datetime,
+  get_time,
+  formatDatetime
 } = require('../helper');
 
 class SocketClientNotReady extends Error {} // { constructor(...args) { super(...args) } }
@@ -138,6 +141,9 @@ class BaseParser {
   get_volume(arg) { return get_volume(arg); }
   get_price(arg1, arg2) { return get_price(arg1, arg2); }
   find_csa(arg1, arg2, arg3) { return find_csa(arg1, arg2, arg3); }
+  get_datetime(arg1, arg2, arg3) { return get_datetime(arg1, arg2, arg3); }
+  get_time(arg1, arg2) { return get_time(arg1, arg2); }
+  formatDatetime(arg1, arg2, arg3, arg4, arg5) { return formatDatetime(arg1, arg2, arg3, arg4, arg5); }
   decode(buf, charset) {
     if (typeof buf === 'string') { // 如果是字符串, 先以二进制转为Buffer再转为字节数组, 然后去除NULL后再转回为Buffer
       buf = Buffer.from(buf, 'binary');

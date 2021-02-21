@@ -1,3 +1,5 @@
+const bufferpack = require('bufferpack');
+
 // Convert a hex string to a byte array
 function hexToBytes(hex) {
   for (var bytes = [], c = 0; c < hex.length; c += 2)
@@ -130,6 +132,60 @@ function find_csa(arr, subarr, from_index) {
   return -1;
 }
 
+function get_datetime(category, buffer, pos) {
+    let year = 0,
+    month = 0,
+    day = 0,
+    hour = 15,
+    minute = 0;
+
+    if (category < 4 || category === 7 || category === 8) {
+      const [zipday, tminutes] = bufferpack.unpack('<HH', buffer.slice(pos, pos + 4));
+      year = (zipday >> 11) + 2004
+      month = parseInt((zipday % 2048) / 100)
+      day = (zipday % 2048) % 100
+
+      hour = parseInt(tminutes / 60)
+      minute = tminutes % 60
+    }
+    else {
+      const [zipday] = bufferpack.unpack('<I', buffer.slice(pos, pos + 4));
+
+      year = parseInt(zipday / 10000);
+      month = parseInt((zipday % 10000) / 100)
+      day = zipday % 100
+    }
+
+    pos += 4;
+
+    return [year, month, day, hour, minute, pos]
+}
+
+function get_time(buffer, pos) {
+  const [tminutes] = bufferpack.unpack('<H', buffer.slice(pos, pos + 2));
+  hour = parseInt(tminutes / 60)
+  minute = tminutes % 60
+  pos += 2
+
+  return [hour, minute, pos]
+}
+
+function formatDatetime(year, month, day, hour, minute) {
+  return padStart(year, 4) + '-' + padStart(month, 2) + '-' + padStart(day, 2) + ' ' + padStart(hour, 2) + ':' + padStart(minute, 2);
+}
+
+function padStart(str, count, fillStr = '0') {
+  if (typeof str === 'number') {
+    str = '' + str;
+  }
+  if (str.length < count) {
+    return str.padStart(count, fillStr);
+  }
+  else {
+    return str;
+  }
+}
+
 module.exports = {
   hexToBytes,
   bytesToHex,
@@ -137,5 +193,8 @@ module.exports = {
   bytesToBuffer,
   get_volume,
   get_price,
-  find_csa
+  find_csa,
+  get_datetime,
+  get_time,
+  formatDatetime
 }

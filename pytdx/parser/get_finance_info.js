@@ -20,25 +20,23 @@
 // 10.940000       3.000000
 
 const bufferpack = require('bufferpack');
-// const logger = require('../log');
 const BaseParser = require('./base');
 
 class GetFinanceInfo extends BaseParser {
   setParams(market, code) {
-    if (typeof code === 'string') {
-      code = code.encode('utf-8');
-    }
-    const pkg = ByteArray.fromhex('0c 1f 18 76 00 01 0b 00 0b 00 10 00 01 00'); // pkg = bytearray.fromhex(u'0c 1f 18 76 00 01 0b 00 0b 00 10 00 01 00')
-    pkg.push(bufferpack.pack('<B6s', market, code)); // pkg.extend(struct.pack(u"<B6s", market, code))
-    this.send_pkg = pkg;
+    const pkg = Buffer.from('0c1f187600010b000b0010000100', 'hex'); // pkg = bytearray.fromhex(u'0c 1f 18 76 00 01 0b 00 0b 00 10 00 01 00')
+    let pkgArr = this.bufferToBytes(pkg);
+    const pkg_param = bufferpack.pack('<B6s', [market, code]);
+    pkgArr = pkgArr.concat(this.bufferToBytes(pkg_param)); // pkg.extend(struct.pack(u"<B6s", market, code))
+    this.send_pkg = this.bytesToBuffer(pkgArr);
   }
 
   parseResponse(body_buf) {
     let pos = 0;
     pos += 2; // skip num ,we only query 1 in this case
-    const { market, code } = bufferpack.unpack('<B6s', body_buf.slice(pos, pos + 7)); // market, code = struct.unpack(u"<B6s",body_buf[pos: pos+7])
+    const [ market, code ] = bufferpack.unpack('<B6s', body_buf.slice(pos, pos + 7)); // market, code = struct.unpack(u"<B6s",body_buf[pos: pos+7])
     pos += 7;
-    const {
+    const [
       liutongguben,
       province,
       industry,
@@ -74,56 +72,58 @@ class GetFinanceInfo extends BaseParser {
       weifenlirun,
       baoliu1,
       baoliu2
-    } = bufferpack.unpack("<IHHIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII", body_buf.slice(pos));
+     ] = bufferpack.unpack("<IHHIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII", body_buf.slice(pos));
 
     return {
       market,
       code,
-      liutongguben: _get_v(liutongguben),
+      liutongguben: this.get_v(liutongguben),
       province,
       industry,
       updated_date,
       ipo_date,
-      zongguben: _get_v(zongguben),
-      guojiagu: _get_v(guojiagu),
-      faqirenfarengu: _get_v(faqirenfarengu),
-      farengu: _get_v(farengu),
-      bgu: _get_v(bgu),
-      hgu: _get_v(hgu),
-      zhigonggu: _get_v(zhigonggu),
-      zongzichan: _get_v(zongzichan),
-      liudongzichan: _get_v(liudongzichan),
-      gudingzichan: _get_v(gudingzichan),
-      wuxingzichan: _get_v(wuxingzichan),
-      gudongrenshu: _get_v(gudongrenshu),
-      liudongfuzhai: _get_v(liudongfuzhai),
-      changqifuzhai: _get_v(changqifuzhai),
-      zibengongjijin: _get_v(zibengongjijin),
-      jingzichan: _get_v(jingzichan),
-      zhuyingshouru: _get_v(zhuyingshouru),
-      zhuyinglirun: _get_v(zhuyinglirun),
-      yingshouzhangkuan: _get_v(yingshouzhangkuan),
-      yingyelirun: _get_v(yingyelirun),
-      touzishouyu: _get_v(touzishouyu),
-      jingyingxianjinliu: _get_v(jingyingxianjinliu),
-      zongxianjinliu: _get_v(zongxianjinliu),
-      cunhuo: _get_v(cunhuo),
-      lirunzonghe: _get_v(lirunzonghe),
-      shuihoulirun: _get_v(shuihoulirun),
-      jinglirun: _get_v(jinglirun),
-      weifenlirun: _get_v(weifenlirun),
-      baoliu1: _get_v(baoliu1),
-      baoliu2: _get_v(baoliu2)
+      zongguben: this.get_v(zongguben),
+      guojiagu: this.get_v(guojiagu),
+      faqirenfarengu: this.get_v(faqirenfarengu),
+      farengu: this.get_v(farengu),
+      bgu: this.get_v(bgu),
+      hgu: this.get_v(hgu),
+      zhigonggu: this.get_v(zhigonggu),
+      zongzichan: this.get_v(zongzichan),
+      liudongzichan: this.get_v(liudongzichan),
+      gudingzichan: this.get_v(gudingzichan),
+      wuxingzichan: this.get_v(wuxingzichan),
+      gudongrenshu: this.get_v(gudongrenshu),
+      liudongfuzhai: this.get_v(liudongfuzhai),
+      changqifuzhai: this.get_v(changqifuzhai),
+      zibengongjijin: this.get_v(zibengongjijin),
+      jingzichan: this.get_v(jingzichan),
+      zhuyingshouru: this.get_v(zhuyingshouru),
+      zhuyinglirun: this.get_v(zhuyinglirun),
+      yingshouzhangkuan: this.get_v(yingshouzhangkuan),
+      yingyelirun: this.get_v(yingyelirun),
+      touzishouyu: this.get_v(touzishouyu),
+      jingyingxianjinliu: this.get_v(jingyingxianjinliu),
+      zongxianjinliu: this.get_v(zongxianjinliu),
+      cunhuo: this.get_v(cunhuo),
+      lirunzonghe: this.get_v(lirunzonghe),
+      shuihoulirun: this.get_v(shuihoulirun),
+      jinglirun: this.get_v(jinglirun),
+      weifenlirun: this.get_v(weifenlirun),
+      baoliu1: this.get_v(baoliu1),
+      baoliu2: this.get_v(baoliu2)
     };
   }
-} 
 
-function _get_v(v) {
-  if (v === 0) {
-    return 0;
-  }
-  else {
-    return get_volume(v);
+  setup() {}
+
+  get_v(v) {
+    if (v === 0) {
+      return 0;
+    }
+    else {
+      return this.get_volume(v);
+    }
   }
 }
 

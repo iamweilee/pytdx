@@ -43,6 +43,9 @@ const {
 const GetSecurityCountCmd = require('./parser/get_security_count');
 const GetSecurityList = require('./parser/get_security_list');
 const GetSecurityQuotesCmd = require('./parser/get_security_quotes');
+const GetFinanceInfo = require('./parser/get_finance_info');
+const GetXdXrInfo = require('./parser/get_xdxr_info');
+const GetSecurityBarsCmd = require('./parser/get_security_bars');
 
 const CONNECT_TIMEOUT = 5000
 const RECV_HEADER_LEN = 0x10
@@ -129,7 +132,25 @@ class TdxHq_API {
     return await cmd.call_api();
   }
   
+  async get_finance_info(market, code) {
+    const cmd = new GetFinanceInfo(this.client);
+    cmd.setParams(market, code);
+    return await cmd.call_api();
+  }
+
+  async get_xdxr_info(market, code) {
+    const cmd = new GetXdXrInfo(this.client);
+    cmd.setParams(market, code);
+    return await cmd.call_api();
+  }
   
+  async get_security_bars(category, market, code, start, count) {
+    const cmd = new GetSecurityBarsCmd(this.client);
+    cmd.setParams(category, market, code, start, count);
+    return await cmd.call_api();
+  }
+  
+        
 }
 
 module.exports = TdxHq_API;
