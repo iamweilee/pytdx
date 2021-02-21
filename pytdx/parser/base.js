@@ -18,7 +18,8 @@ const {
   find_csa,
   get_datetime,
   get_time,
-  formatDatetime
+  formatDatetime,
+  padStart
 } = require('../helper');
 
 class SocketClientNotReady extends Error {} // { constructor(...args) { super(...args) } }
@@ -144,6 +145,7 @@ class BaseParser {
   get_datetime(arg1, arg2, arg3) { return get_datetime(arg1, arg2, arg3); }
   get_time(arg1, arg2) { return get_time(arg1, arg2); }
   formatDatetime(arg1, arg2, arg3, arg4, arg5) { return formatDatetime(arg1, arg2, arg3, arg4, arg5); }
+  padStart(arg1, arg2, arg3) { return padStart(arg1, arg2, arg3); }
   decode(buf, charset) {
     if (typeof buf === 'string') { // 如果是字符串, 先以二进制转为Buffer再转为字节数组, 然后去除NULL后再转回为Buffer
       buf = Buffer.from(buf, 'binary');

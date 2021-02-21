@@ -1,12 +1,5 @@
-// # coding=utf-8
-
-// from pytdx.parser.base import BaseParser
-// from pytdx.helper import get_datetime, get_volume, get_price
-// from collections import OrderedDict
-// import struct
-
-
 // 获取股票数量 深市
+// 参数：市场代码， 股票代码， 如： 0 或 1
 
 // 发送
 // 0c 0c 18 6c 00 01 08 00 08 00 4e 04 00 00 75 c7 33 01

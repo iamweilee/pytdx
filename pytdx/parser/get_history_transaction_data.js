@@ -1,27 +1,25 @@
 // 查询历史分笔成交
+// 参数：市场代码， 股票代码，起始位置，日期 数量 如： 0,000001,0,10,20170209
 
 const bufferpack = require('bufferpack');
-// const logger = require('../log');
 const BaseParser = require('./base');
 
 class GetHistoryTransactionData extends BaseParser {
   setParams(market, code, start, count, date) {
-    if (typeof code === 'string') {
-      code = code.encode('utf-8');
-    }
-
     if (typeof date === 'string') {
       date = +date;
     }
 
-    const pkg = ByteArray.fromhex('0c 01 30 01 00 01 12 00 12 00 b5 0f');
-    pkg.push(bufferpack.pack('<IH6sHH'), date, market, code, start, count);
-    this.send_pkg = pkg;
+    const pkg = Buffer.from('0c013001000112001200b50f', 'hex');
+    let pkgArr = this.bufferToBytes(pkg);
+    const pkg_param = bufferpack.pack('<IH6sHH', [date, market, code, start, count]);
+    pkgArr = pkgArr.concat(this.bufferToBytes(pkg_param));
+    this.send_pkg = this.bytesToBuffer(pkgArr);
   }
 
   parseResponse(body_buf) {
-    let pos = 0;
-    const { num } = bufferpack.unpack('<H', body_buf.slice(0, 2));
+    var pos = 0;
+    const [num] = bufferpack.unpack('<H', body_buf.slice(pos, pos + 2));
     pos += 2;
     const ticks = [];
     // skip 4 bytes
@@ -32,26 +30,26 @@ class GetHistoryTransactionData extends BaseParser {
     for (let i = 0; i < num; i++) {
       // ??? get_time
       // \x80\x03 = 14:56
-      let { hour, minute, pos } = get_time(body_buf, pos);
-      let { price_raw, pos } = get_price(body_buf, pos);
-      let { vol, pos } = get_price(body_buf, pos);
-      let { buyorsell, pos } = get_price(body_buf, pos);
-      let { pos } = get_price(body_buf, pos);
+      var [ hour, minute, pos ] = this.get_time(body_buf, pos);
+      var [ price_raw, pos ] = this.get_price(body_buf, pos);
+      var [ vol, pos ] = this.get_price(body_buf, pos);
+      var [ buyorsell, pos ] = this.get_price(body_buf, pos);
+      var [ _, pos ] = this.get_price(body_buf, pos);
 
       last_price += price_raw;
 
-      const tick = {
-        time: hour + ':' + minute, // "%02d:%02d" % (hour, minute)
+      ticks.push({
+        time: this.padStart(hour, 2) + ':' + this.padStart(minute, 2), // "%02d:%02d" % (hour, minute)
         price: last_price / 100,
         vol,
         buyorsell
-      };
-
-      ticks.push(tick);
+      });
     }
 
     return ticks;
   }
+
+  setup() {}
 }
 
 module.exports = GetHistoryTransactionData;

@@ -1,4 +1,6 @@
 // 获取股票列表
+// 参数：市场代码, 起始位置， 数量  如： 0,0 或 1,100
+
 const bufferpack = require('bufferpack');
 const BaseParser = require('./base');
 class GetSecurityList extends BaseParser {

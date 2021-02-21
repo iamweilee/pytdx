@@ -1,53 +1,53 @@
-# coding=utf-8
-
-from pytdx.parser.base import BaseParser
-from pytdx.helper import get_datetime, get_volume, get_price, get_time
-from collections import OrderedDict
-import struct
-
 // 查询分笔成交
+// 参数：市场代码， 股票代码，起始位置， 数量 如： 0,000001,0,10
 
-class GetTransactionData(BaseParser):
+const bufferpack = require('bufferpack');
+const BaseParser = require('./base');
 
-    def setParams(self, market, code, start, count):
-        if type(code) is str:
-            code = code.encode("utf-8")
-        pkg = bytearray.fromhex(u'0c 17 08 01 01 01 0e 00 0e 00 c5 0f')
-        pkg.extend(struct.pack("<H6sHH", market, code, start, count))
-        self.send_pkg = pkg
+class GetTransactionData extends BaseParser {
+  setParams(market, code, start, count) {
+    const pkg = Buffer.from('0c17080101010e000e00c50f', 'hex');
+    let pkgArr = this.bufferToBytes(pkg);
+    const pkg_param = bufferpack.pack('<H6sHH', [market, code, start, count]);
+    pkgArr = pkgArr.concat(this.bufferToBytes(pkg_param));
+    this.send_pkg = this.bytesToBuffer(pkgArr);
+  }
 
-    def parseResponse(self, body_buf):
-        pos = 0
-        (num, ) = struct.unpack("<H", body_buf[:2])
-        pos += 2
-        ticks = []
-        last_price = 0
-        for i in range(num):
-            ### ?? get_time
-            # \x80\x03 = 14:56
+  parseResponse(body_buf) {
+    var pos = 0;
+    const [count] = bufferpack.unpack('<H', body_buf.slice(pos, pos + 2));
+    pos += 2;
 
-            hour, minute, pos = get_time(body_buf, pos)
+    const ticks = [];
 
-            price_raw, pos = get_price(body_buf, pos)
-            vol, pos = get_price(body_buf, pos)
-            num, pos = get_price(body_buf, pos)
-            buyorsell, pos = get_price(body_buf, pos)
-            _, pos = get_price(body_buf, pos)
+    let last_price = 0;
 
-            last_price = last_price + price_raw
+    for (let i = 0; i < count; i++) {
+      // ??? get_time
+      // \x80\x03 = 14:56
+      // console.log('body_buf.length, pos', i, body_buf.length, pos)
+      var [ hour, minute, pos ] = this.get_time(body_buf, pos);
+      var [ price_raw, pos ] = this.get_price(body_buf, pos);
+      var [ vol, pos ] = this.get_price(body_buf, pos);
+      var [ num, pos ] = this.get_price(body_buf, pos);
+      var [ buyorsell, pos ] = this.get_price(body_buf, pos);
+      var [ _, pos ] = this.get_price(body_buf, pos);
 
-            tick = OrderedDict(
-                [
-                    ("time", "%02d:%02d" % (hour, minute)),
-                    ("price", last_price/100),
-                    ("vol", vol),
-                    ("num", num),
-                    ("buyorsell", buyorsell),
-                ]
-            )
+      last_price += price_raw;
 
-            ticks.append(tick)
+      ticks.push({
+        time: this.padStart(hour, 2) + ':' + this.padStart(minute, 2), // "%02d:%02d" % (hour, minute)
+        price: last_price / 100,
+        vol,
+        num,
+        buyorsell
+      });
+    }
 
-        return ticks
+    return ticks;
+  }
 
+  setup() {}
+}
 
+module.exports = GetTransactionData;

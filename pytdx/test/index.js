@@ -27,6 +27,14 @@ const api = new TdxHq_API();
   // console.log(index_bars);
   // const time_data = await api.get_minute_time_data(0, '000001');
   // console.log(time_data);
-  const his_time_data = await api.get_history_minute_time_data(0, '000001', 20161209)
-  console.log(his_time_data)
+  // const his_time_data = await api.get_history_minute_time_data(0, '000001', 20161209)
+  // console.log(his_time_data)
+  // const his_trans_data = await api.get_history_transaction_data(0, '000001', 0, 10, 20170209)
+  // console.log(his_trans_data)
+  // const trans_data = await api.get_transaction_data(0, '000001', 0, 10);
+  // console.log(trans_data)
+  // const company_category = await api.get_company_info_category(0, '000001');
+  // console.log(company_category)
+  const company_info = await api.get_company_info_content(0, '000001', '000001.txt', 0, 2000);
+  console.log(company_info);
 })()

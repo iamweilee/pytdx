@@ -1,11 +1,6 @@
 // # coding=utf-8
 
-// from pytdx.parser.base import BaseParser
-// from pytdx.helper import get_datetime, get_volume, get_price
-// from collections import OrderedDict
-// import struct
-const bufferpack = require('bufferpack');
-// const logger = require('../log');
+// const bufferpack = require('bufferpack');
 const BaseParser = require('./base');
 
 class SetupCmd1 extends BaseParser {

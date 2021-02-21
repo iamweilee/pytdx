@@ -1,4 +1,6 @@
 // 查询公司信息目录
+// 参数：市场代码， 股票代码， 如： 0,000001 或 1,600300
+
 const bufferpack = require('bufferpack');
 // const logger = require('../log');
 const BaseParser = require('./base');
@@ -6,13 +8,11 @@ const BaseParser = require('./base');
 class GetCompanyInfoCategory extends BaseParser {
   
   setParams(market, code) {
-    if (typeof code === 'string') {
-      code = code.encode('utf-8');
-    }
-
-    const pkg = ByteArray.fromhex('0c 0f 10 9b 00 01 0e 00 0e 00 cf 02'); // pkg = bytearray.fromhex(u'0c 0f 10 9b 00 01 0e 00 0e 00 cf 02')
-    pkg.push(bufferpack.pack('<H6sI', market, code, 0)); // pkg.extend(struct.pack(u"<H6sI", market, code, 0))
-    this.send_pkg = pkg;
+    const pkg = Buffer.from('0c0f109b00010e000e00cf02', 'hex');
+    let pkgArr = this.bufferToBytes(pkg);
+    const pkg_param = bufferpack.pack('<H6sI', [market, code, 0]);
+    pkgArr = pkgArr.concat(this.bufferToBytes(pkg_param));
+    this.send_pkg = this.bytesToBuffer(pkgArr);
   }
 
   /**
@@ -25,26 +25,18 @@ class GetCompanyInfoCategory extends BaseParser {
    */
   parseResponse(body_buf) {
     let pos = 0;
-    const { num } = bufferpack.unpack('<H', body_buf.slice(0, 2)); // (num, ) = struct.unpack("<H", body_buf[:2])
+    const [num] = bufferpack.unpack('<H', body_buf.slice(pos, pos + 2)); // (num, ) = struct.unpack("<H", body_buf[:2])
     pos += 2;
 
     const category = [];
 
     for (let i = 0; i < num; i++) {
-      const { name, filename, start, length } = bufferpack.unpack('<64s80sII', body_buf.slice(pos, pos+ 152)); // (name, filename, start, length) = struct.unpack(u"<64s80sII", body_buf[pos: pos+ 152])
-      p += 152;
-      // entry = OrderedDict(
-      //   [
-      //       ('name', get_str(name)),
-      //       ('filename', get_str(filename)),
-      //       ('start', start),
-      //       ('length', length),
-      //   ]
-      // )
-      // category.append(entry)
+      const [ name, filename, start, length ] = bufferpack.unpack('<64s80sII', body_buf.slice(pos, pos + 152)); // (name, filename, start, length) = struct.unpack(u"<64s80sII", body_buf[pos: pos+ 152])
+      pos += 152;
+
       category.push({
-        name: get_str(name),
-        filename: get_str(filename),
+        name: this.get_str(name),
+        filename: this.get_str(filename),
         start,
         length
       });
@@ -52,21 +44,25 @@ class GetCompanyInfoCategory extends BaseParser {
 
     return category;
   }
-}
 
-function get_str(b) {
-  const p = b.find('\x00');
-  if (p !== -1) {
-    b = b.slice(0, p);
-  }
-  try {
-    n = b.decode('gbk');
-  }
-  catch(e) {
-    n = 'unkown_str';
-  }
+  setup() {}
 
-  return n;
+  get_str(b) {
+    const p = b.indexOf('\x00');
+
+    if (p !== -1) {
+      b = b.slice(0, p);
+    }
+    let n;
+    try {
+      n = this.decode(b, 'gbk');
+    }
+    catch(e) {
+      n = 'unkown_str';
+    }
+  
+    return n;
+  }
 }
 
 module.exports = GetCompanyInfoCategory;

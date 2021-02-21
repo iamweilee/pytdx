@@ -1,4 +1,6 @@
 // 获取股票行情
+// 参数：市场代码， 股票代码， 如： 0,000001 或 1,600300
+
 const bufferpack = require('bufferpack');
 const BaseParser = require('./base');
 

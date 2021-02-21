@@ -163,8 +163,8 @@ function get_datetime(category, buffer, pos) {
 
 function get_time(buffer, pos) {
   const [tminutes] = bufferpack.unpack('<H', buffer.slice(pos, pos + 2));
-  hour = parseInt(tminutes / 60)
-  minute = tminutes % 60
+  const hour = parseInt(tminutes / 60)
+  const minute = tminutes % 60
   pos += 2
 
   return [hour, minute, pos]
@@ -196,5 +196,6 @@ module.exports = {
   find_csa,
   get_datetime,
   get_time,
-  formatDatetime
+  formatDatetime,
+  padStart
 }

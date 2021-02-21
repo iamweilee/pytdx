@@ -49,6 +49,10 @@ const GetSecurityBarsCmd = require('./parser/get_security_bars');
 const GetIndexBarsCmd = require('./parser/get_index_bars');
 const GetMinuteTimeData = require('./parser/get_minute_time_data');
 const GetHistoryMinuteTimeData = require('./parser/get_history_minute_time_data');
+const GetHistoryTransactionData = require('./parser/get_history_transaction_data');
+const GetTransactionData = require('./parser/get_transaction_data');
+const GetCompanyInfoCategory = require('./parser/get_company_info_category');
+const GetCompanyInfoContent = require('./parser/get_company_info_content');
 
 const CONNECT_TIMEOUT = 5000
 const RECV_HEADER_LEN = 0x10
@@ -168,6 +172,30 @@ class TdxHq_API {
   async get_history_minute_time_data(market, code, date) {
     const cmd = new GetHistoryMinuteTimeData(this.client);
     cmd.setParams(market, code, date);
+    return await cmd.call_api();
+  }
+
+  async get_transaction_data(market, code, start, count) {
+    const cmd = new GetTransactionData(this.client);
+    cmd.setParams(market, code, start, count);
+    return await cmd.call_api();
+  }
+  
+  async get_history_transaction_data(market, code, start, count, date) {
+    const cmd = new GetHistoryTransactionData(this.client);
+    cmd.setParams(market, code, start, count, date);
+    return await cmd.call_api();
+  }
+  
+  async get_company_info_category(market, code) {
+    const cmd = new GetCompanyInfoCategory(this.client);
+    cmd.setParams(market, code);
+    return await cmd.call_api();
+  }
+  
+  async get_company_info_content(market, code, filename, start, length) {
+    const cmd = new GetCompanyInfoContent(this.client);
+    cmd.setParams(market, code, filename, start, length);
     return await cmd.call_api();
   }
   
