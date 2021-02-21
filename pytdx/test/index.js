@@ -21,6 +21,8 @@ const api = new TdxHq_API();
   // console.log(finance_info);
   // const xdxr_info = await api.get_xdxr_info(0, '000001');
   // console.log(xdxr_info);
-  const bars = await api.get_security_bars(9, 0, '000001', 0, 10);
-  console.log(bars)
+  // const bars = await api.get_security_bars(9, 0, '000001', 0, 10);
+  // console.log(bars)
+  const index_bars = await api.get_index_bars(9, 1, '000001', 0, 100);
+  console.log(index_bars);
 })()
